@@ -18,3 +18,7 @@ def test_ui_02(driver):
     # url validation
     wait.until(EC.url_contains("/auth/login"))
     assert "/auth/login" in driver.current_url, "Url is not login page"
+
+    # message validation
+    error_message_elem = wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "oxd-alert-content-text")))
+    assert error_message_elem.text == "Invalid credentials", "Message is not displayed"

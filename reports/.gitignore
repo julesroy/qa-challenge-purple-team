@@ -1,0 +1,5 @@
+# Ignore test report artifacts generated locally
+*.html
+*.png
+*.css
+assets/

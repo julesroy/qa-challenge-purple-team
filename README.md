@@ -8,19 +8,21 @@ On macOS / Linux :
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip3 install selenium pytest pytest-xdist requests
+pip install -r requirements.txt
 ```
 
 On Windows :
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
-pip install selenium pytest pytest-xdist requests
+pip install -r requirements.txt
 ```
 
 ## Structure :
 
-```bash
+We adopted a Page Object Model (POM) pattern for the UI automation part.
+
+```
 qa-challenge-purple-team/
 │
 ├── .venv/ # virtual env
@@ -42,7 +44,10 @@ qa-challenge-purple-team/
 │   └── api_tests.log
 │
 ├── conftest.py # test configuration 
-└── pytest.ini # pytest configuration
+├── pytest.ini # pytest configuration
+├── requirements.txt # python dependencies
+└── reports/ # test execution reports
+    └── report.html
 ```
 
 ## 1. Tests UI Automation (Selenium)
@@ -50,7 +55,7 @@ qa-challenge-purple-team/
 | Test ID | Test Name | Test Type | Preconditions | Test Data | Execution Steps | Expected Results | Assertions / Validations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **TEST-UI-01** | Successful login to application | Positive / Smoke | Login page accessible | `username: "Admin"`, `password: "admin123"` | 1. Enter username. 2. Enter password. 3. Click Login. | Redirection to main dashboard. | URL contains `/dashboard/index` and dashboard heading is visible. |
-| **TEST-UI-02** | Login failure with invalid password | Negative / Validation | Login page accessible | `username: "Admin"`, `password: "BadPassword999"` | 1. Enter username. 2. Enter invalid password. 3. Click Login. | Login fails, alert message displayed. | Element `.oxd-alert-content-text` is visible with text "Invalid credentials". |
+| **TEST-UI-02** | Login failure with invalid password | Negative / Validation | Login page accessible | `username: "Admin"`, `password: "BadPassword999"` | 1. Enter username. 2. Enter invalid password. 3. Click Login. | Login fails, alert message displayed. | No redirection and element `.oxd-alert-content-text` is visible with text "Invalid credentials". |
 | **TEST-UI-03** | Employee creation with profile picture | Positive / Upload | Logged in as Admin | `firstName: "John"`, `lastName: "Doe"`, `file: "avatar.jpg"` | 1. Navigate to PIM > Add Employee. 2. Enter first and last name. 3. Upload image to file input. 4. Save. | Employee created successfully and avatar displayed. | "Successfully Saved" success toast displayed and redirection to created profile. |
 | **TEST-UI-04** | Add attachment to employee profile | Positive / File validation | Logged in, employee profile open | `file: "contract.pdf"`, `comment: "Employment contract"` | 1. Scroll to Attachments section. 2. Click Add. 3. Select PDF file. 4. Enter comment. 5. Save. | Document is attached to profile and listed. | Attachments table displays a new row containing "contract.pdf". |
 | **TEST-UI-05** | Reject unauthorized file upload | Negative / Failure-oriented | Logged in, upload modal open | `file: "script_payload.exe"` | 1. Open attachment upload form. 2. Upload .exe file. 3. Submit. | System blocks unsupported file. | Error message visible `.oxd-input-field-error-message` and file is not saved. |
@@ -71,3 +76,37 @@ qa-challenge-purple-team/
 | **TEST-API-03** | Validate employee details | `GET /web/index.php/api/v2/pim/employees/{empNumber}` | Data validation | Employee created via TEST-API-02 | Path param: `empNumber` from TEST-API-02 | `200 OK` | Keys `firstName` and `lastName` in response match injected values. |
 | **TEST-API-04** | Delete an employee | `DELETE /web/index.php/api/v2/pim/employees` | CRUD (Delete) | Employee to delete exists | Body: `{"ids": [<empNumber>]}` | `200 OK` | Deletion confirmation in body, and subsequent GET returns `404 Not Found`. |
 | **TEST-API-05** | Creation with incomplete payload | `POST /web/index.php/api/v2/admin/users` | Negative / Error validation | Valid authenticated session | Body: `{}` (empty payload) | `422 Unprocessable Entity` or `400 Bad Request` | HTTP status indicates client error and JSON details missing fields. |
+
+---
+
+## 3. Tests reporting 
+
+Reports are generated automatically in the `reports/` directory using `pytest-html`.
+
+### Run tests and generate report :
+```bash
+# Run all tests (the report is generated in reports/report.html)
+pytest
+
+# Run only UI tests
+pytest tests/ui
+
+# Run only API tests
+pytest tests/api
+```
+
+### View report :
+On macOS :
+```bash
+open reports/report.html
+```
+
+On Linux :
+```bash
+xdg-open reports/report.html
+```
+
+On Windows :
+```bash
+start reports/report.html
+```
