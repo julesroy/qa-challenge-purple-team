@@ -1,0 +1,23 @@
+[
+  {
+    "role": "Admin",
+    "status": "Enabled",
+    "username": "john.tester.qa1",
+    "password": "Password123!",
+    "employee_name": "a"
+  },
+  {
+    "role": "ESS",
+    "status": "Enabled",
+    "username": "jane.tester.qa2",
+    "password": "Password123!",
+    "employee_name": "a"
+  },
+  {
+    "role": "ESS",
+    "status": "Disabled",
+    "username": "bob.tester.qa3",
+    "password": "Password123!",
+    "employee_name": "a"
+  }
+]
