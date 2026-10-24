@@ -1,6 +1,18 @@
 # qa-challenge-purple-team
 
+## Purple Team :
+
+Members :
+- MACAJONE Enzo
+- ROY Jules
+- TOUNSI Aymane-Adam
+- VÉNIER Bastien
+- VILARINHO Fabio
+
+## Tested platform :
+
 Tested website : https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index
+It's an open-source Human Resource Management (HRM) system.
 
 ## Language / Dependencies :
 
