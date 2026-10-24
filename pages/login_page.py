@@ -3,6 +3,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 class LoginPage:
+    """Page object for the Login section of the website."""
     def __init__(self, driver):
         self.driver = driver
         self.wait = WebDriverWait(driver, 10)
@@ -14,11 +15,14 @@ class LoginPage:
         self._submit_button = (By.CSS_SELECTOR, "button[type='submit']")
 
     def open(self):
+        """Open the login page."""
         self.driver.get(self.url)
         self.wait.until(EC.visibility_of_element_located(self._username_input))
 
     def login(self, username, password):
-        # enter credentials with explicit wait
+        """
+        Login with provided credentials.
+        """
         user_field = self.wait.until(EC.element_to_be_clickable(self._username_input))
         user_field.clear()
         user_field.send_keys(username)

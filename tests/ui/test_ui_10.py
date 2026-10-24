@@ -12,9 +12,18 @@ def load_user_dataset():
     with open(path, "r") as f:
         return json.load(f)
 
-# TEST-UI-10 : Multiple user creation via dataset (Data-driven testing)
 @pytest.mark.parametrize("user_data", load_user_dataset())
 def test_ui_10(driver, user_data):
+    """Verify data-driven creation of multiple users with varying roles and statuses.
+
+    Steps:
+        -> Log in as Admin and navigate to Admin > User Management > Add User.
+        -> Populate user creation form using parameterized dataset records with a unique username suffix.
+        -> Submit the form to create the user.
+
+    Validates:
+        -> A success toast notification ('Successfully Saved' / 'Success') confirms user creation for each dataset record.
+    """
     login_page = LoginPage(driver)
     admin_page = AdminPage(driver)
     wait = WebDriverWait(driver, 10)

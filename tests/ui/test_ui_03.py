@@ -6,8 +6,19 @@ from selenium.webdriver.support import expected_conditions as EC
 from pages.login_page import LoginPage
 from pages.pim_page import PimPage
 
-# TEST-UI-03 : Employee creation with profile picture
 def test_ui_03(driver):
+    """Verify employee creation with an uploaded profile picture.
+
+    Steps:
+        -> Log in as Admin and navigate to the PIM Add Employee page.
+        -> Fill in first and last names, and upload an avatar image.
+        -> Save the new employee record.
+
+    Validates:
+        -> A 'Successfully Saved' toast notification appears.
+        -> The browser redirects to the personal details profile page ("/pim/viewPersonalDetails").
+        -> The uploaded avatar is visible on the profile page.
+    """
     login_page = LoginPage(driver)
     pim_page = PimPage(driver)
     wait = WebDriverWait(driver, 10)

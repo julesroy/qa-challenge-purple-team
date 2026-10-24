@@ -4,8 +4,16 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from pages.login_page import LoginPage
 
-# successful login test
 def test_ui_01(driver):
+    """Verify that a user can successfully log in with valid credentials.
+
+    Steps:
+        -> Navigate to the login page.
+        -> Submit valid credentials (Admin / admin123).
+
+    Validates:
+        -> The user is redirected to the dashboard page ("/dashboard/index").
+    """
     login_page = LoginPage(driver)
     
     # open browser and login

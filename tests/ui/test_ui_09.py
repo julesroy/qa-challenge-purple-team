@@ -4,8 +4,16 @@ from selenium.webdriver.support import expected_conditions as EC
 from pages.login_page import LoginPage
 from pages.leave_page import LeavePage
 
-# TEST-UI-09 : Leave request with date validation
 def test_ui_09(driver):
+    """Verify leave request submission and balance validation.
+
+    Steps:
+        -> Log in as Admin and navigate to Leave > Apply.
+        -> Check if leave balance is available; if not, check the warning, otherwise submit a leave application.
+
+    Validates:
+        -> Displays 'No Leave Types with Leave Balance' if balance is zero, or displays a 'Successfully Saved' toast when a valid request is submitted.
+    """
     login_page = LoginPage(driver)
     leave_page = LeavePage(driver)
     wait = WebDriverWait(driver, 10)

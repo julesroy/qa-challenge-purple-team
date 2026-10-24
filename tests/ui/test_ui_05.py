@@ -6,8 +6,16 @@ from selenium.webdriver.support import expected_conditions as EC
 from pages.login_page import LoginPage
 from pages.my_info_page import MyInfoPage
 
-# TEST-UI-05 : Reject unauthorized file upload
 def test_ui_05(driver):
+    """Verify that uploading an unauthorized file type is rejected.
+
+    Steps:
+        -> Log in as Admin and navigate to the 'My Info' section.
+        -> Attempt to upload an unauthorized executable payload (.exe) in attachments.
+
+    Validates:
+        -> An inline error message is displayed and/or the unauthorized file is not added to the attachments table.
+    """
     login_page = LoginPage(driver)
     my_info_page = MyInfoPage(driver)
     wait = WebDriverWait(driver, 10)

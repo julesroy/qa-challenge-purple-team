@@ -18,6 +18,17 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+## Language / Dependencies :
+
+To build our testing framework, we chose to use Python and these following dependencies :
+
+- selenium : for UI automation
+- requests : for API automation
+- pytest : for test orchestration and reporting
+- pytest-xdist : for parallel test execution
+- pytest-html : for test execution reports
+- pdoc : for framework documentation
+
 ## Structure :
 
 We adopted a Page Object Model (POM) pattern for the UI automation part.
@@ -50,7 +61,9 @@ qa-challenge-purple-team/
     └── report.html
 ```
 
-## 1. Tests UI Automation (Selenium)
+## Tests executed :
+
+### Tests UI Automation (selenium)
 
 | Test ID | Test Name | Test Type | Preconditions | Test Data | Execution Steps | Expected Results | Assertions / Validations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -67,7 +80,7 @@ qa-challenge-purple-team/
 
 ---
 
-## 2. Tests API Automation
+### 2. Tests API Automation (requests)
 
 | Test ID | Test Name | HTTP Method & Endpoint | Test Type | Preconditions | Parameters / Payload | Expected HTTP Status | Assertions / Validations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -79,7 +92,7 @@ qa-challenge-purple-team/
 
 ---
 
-## 3. Tests reporting 
+## Tests reporting :
 
 Reports are generated automatically in the `reports/` directory using `pytest-html`.
 
@@ -96,17 +109,13 @@ pytest tests/api
 ```
 
 ### View report :
-On macOS :
+
+Then open reports/report.html in your browser.
+
+### Documentation :
+To generate documentation, we use `pdoc` :
 ```bash
-open reports/report.html
+pdoc -o docs/ pages/ tests/
 ```
 
-On Linux :
-```bash
-xdg-open reports/report.html
-```
-
-On Windows :
-```bash
-start reports/report.html
-```
+Then you can open index.html in the docs/ directory to access codebase documentation.

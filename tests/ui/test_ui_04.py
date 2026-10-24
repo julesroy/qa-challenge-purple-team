@@ -5,8 +5,16 @@ from selenium.webdriver.support import expected_conditions as EC
 from pages.login_page import LoginPage
 from pages.my_info_page import MyInfoPage
 
-# TEST-UI-04 : Add attachment to employee profile
 def test_ui_04(driver):
+    """Verify adding an attachment to the employee profile.
+
+    Steps:
+        -> Log in as Admin and navigate to the 'My Info' section.
+        -> Open the add attachment panel and upload a valid PDF contract.
+
+    Validates:
+        -> The uploaded file ('contract.pdf') appears in the attachments table.
+    """
     login_page = LoginPage(driver)
     my_info_page = MyInfoPage(driver)
     wait = WebDriverWait(driver, 10)

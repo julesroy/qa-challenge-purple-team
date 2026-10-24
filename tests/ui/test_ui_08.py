@@ -5,8 +5,16 @@ from selenium.webdriver.support import expected_conditions as EC
 from pages.login_page import LoginPage
 from pages.admin_page import AdminPage
 
-# TEST-UI-08 : Delete user via modal confirmation
 def test_ui_08(driver):
+    """Verify user deletion through confirmation modal dialog.
+
+    Steps:
+        -> Log in as Admin and navigate to Admin > User Management.
+        -> Trigger the delete action on a user row and confirm the deletion modal dialog.
+
+    Validates:
+        -> A success toast notification ('Successfully Deleted' / 'Success') is displayed.
+    """
     login_page = LoginPage(driver)
     admin_page = AdminPage(driver)
     wait = WebDriverWait(driver, 10)

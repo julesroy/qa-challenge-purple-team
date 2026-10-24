@@ -5,8 +5,16 @@ from selenium.webdriver.support import expected_conditions as EC
 from pages.login_page import LoginPage
 from pages.admin_page import AdminPage
 
-# TEST-UI-07 : Pay grade boundary validation
 def test_ui_07(driver):
+    """Verify boundary validation when configuring salary ranges for a pay grade.
+
+    Steps:
+        -> Log in as Admin and navigate to Admin > Job > Pay Grades.
+        -> Edit a pay grade and attempt to add currency with a minimum salary greater than the maximum salary.
+
+    Validates:
+        -> An inline validation error ('Should be higher than Minimum Salary') is displayed on the maximum salary field.
+    """
     login_page = LoginPage(driver)
     admin_page = AdminPage(driver)
     wait = WebDriverWait(driver, 10)

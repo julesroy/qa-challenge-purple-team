@@ -4,8 +4,16 @@ from selenium.webdriver.support import expected_conditions as EC
 from pages.login_page import LoginPage
 from pages.my_info_page import MyInfoPage
 
-# TEST-UI-06 : Personal details update
 def test_ui_06(driver):
+    """Verify updating employee personal details.
+
+    Steps:
+        -> Log in as Admin and navigate to the 'My Info' section.
+        -> Update personal information (nationality, marital status, date of birth) and save.
+
+    Validates:
+        -> A 'Successfully Updated' toast confirmation notification is displayed.
+    """
     login_page = LoginPage(driver)
     my_info_page = MyInfoPage(driver)
     wait = WebDriverWait(driver, 10)
