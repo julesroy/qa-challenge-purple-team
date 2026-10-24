@@ -45,57 +45,127 @@ class AdminPage:
         # Toast
         self._toast_message = (By.CSS_SELECTOR, ".oxd-text--toast-message, .oxd-toast-content, .oxd-toast")
 
+    def _wait_for_spinner(self):
+        """Wait for any loading spinner or form/table overlay to disappear."""
+        try:
+            WebDriverWait(self.driver, 10).until(
+                EC.invisibility_of_element_located((By.CSS_SELECTOR, ".oxd-form-loader, .oxd-loading-spinner, .oxd-table-loader"))
+            )
+        except Exception:
+            pass
+
     def navigate_to_users(self):
         """Navigate to Admin > User Management > Users."""
         self.driver.get(self.users_url)
         self.wait.until(EC.visibility_of_element_located(self._search_username_input))
+        self._wait_for_spinner()
+        time.sleep(0.5)
 
     def navigate_to_add_user(self):
         """Navigate directly to the Add User page."""
         self.driver.get(self.add_user_url)
         self.wait.until(EC.visibility_of_element_located(self._role_select))
+        self._wait_for_spinner()
+        time.sleep(0.5)
 
     def navigate_to_pay_grades(self):
         """Navigate to Admin > Job > Pay Grades."""
         self.driver.get(self.pay_grades_url)
         self.wait.until(EC.visibility_of_element_located(self._edit_pay_grade_icon))
+        self._wait_for_spinner()
+        time.sleep(0.5)
 
     def open_first_pay_grade_edit(self):
         """Click on the edit icon of the first pay grade in the table."""
+        self._wait_for_spinner()
         edit_icon = self.wait.until(EC.element_to_be_clickable(self._edit_pay_grade_icon))
-        edit_icon.click()
+        try:
+            edit_icon.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", edit_icon)
         self.wait.until(EC.url_contains("/payGrade/"))
+        self._wait_for_spinner()
 
     def open_add_currency(self):
         """Click the Add button in the Currencies section."""
+        self._wait_for_spinner()
         btn = self.wait.until(EC.element_to_be_clickable(self._add_currency_btn))
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", btn)
-        btn.click()
+        time.sleep(0.2)
+        try:
+            btn.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", btn)
         self.wait.until(EC.visibility_of_element_located(self._min_salary_input))
 
     def _select_dropdown(self, locator, option_text):
+        self._wait_for_spinner()
         dropdown = self.wait.until(EC.element_to_be_clickable(locator))
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", dropdown)
-        dropdown.click()
-        time.sleep(0.5)
+        time.sleep(0.2)
+        try:
+            dropdown.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", dropdown)
+        time.sleep(0.3)
         option_xpath = f"//div[@role='option']//span[text()='{option_text}']"
         option = self.wait.until(EC.element_to_be_clickable((By.XPATH, option_xpath)))
-        option.click()
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", option)
+        time.sleep(0.2)
+        try:
+            option.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", option)
+        try:
+            WebDriverWait(self.driver, 3).until(
+                EC.invisibility_of_element_located((By.CSS_SELECTOR, ".oxd-select-dropdown"))
+            )
+        except Exception:
+            pass
+        time.sleep(0.2)
 
     def search_user(self, username: str):
         """Search for a user in the user management table."""
+        self._wait_for_spinner()
         input_elem = self.wait.until(EC.element_to_be_clickable(self._search_username_input))
         input_elem.clear()
         input_elem.send_keys(username)
         self.driver.find_element(*self._search_submit_btn).click()
-        time.sleep(1.5)
+        self._wait_for_spinner()
+        time.sleep(1)
 
     def delete_first_user_in_table(self):
         """Click delete on the first user in search results and confirm on modal."""
-        delete_btn = self.wait.until(EC.element_to_be_clickable(self._delete_icon_btn))
-        delete_btn.click()
+        self._wait_for_spinner()
+        cards = self.wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".oxd-table-card")))
+        target_btn = None
+        for card in cards:
+            text = card.text
+            btns = card.find_elements(By.XPATH, ".//button[.//i[contains(@class, 'bi-trash')]]")
+            if btns:
+                # Prefer deleting a non-Admin account so system does not refuse deletion
+                if "Admin\n" not in text and "Admin " not in text:
+                    target_btn = btns[0]
+                    break
+                elif target_btn is None:
+                    target_btn = btns[0]
+
+        if not target_btn:
+            target_btn = self.wait.until(EC.element_to_be_clickable(self._delete_icon_btn))
+
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", target_btn)
+        time.sleep(0.3)
+        try:
+            target_btn.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", target_btn)
+
         confirm_btn = self.wait.until(EC.element_to_be_clickable(self._confirm_delete_btn))
-        confirm_btn.click()
+        time.sleep(0.3)
+        try:
+            confirm_btn.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", confirm_btn)
 
     def create_user(self, role: str, status: str, username: str, password: str, employee_hint: str = "a"):
         """Fill in and submit the Add User form."""

@@ -25,22 +25,56 @@ class LeavePage:
         # Toast
         self._toast_message = (By.CSS_SELECTOR, ".oxd-text--toast-message, .oxd-toast-content, .oxd-toast")
 
+    def _wait_for_spinner(self):
+        """Wait for any loading spinner or form overlay to disappear."""
+        try:
+            WebDriverWait(self.driver, 10).until(
+                EC.invisibility_of_element_located((By.CSS_SELECTOR, ".oxd-form-loader, .oxd-loading-spinner"))
+            )
+        except Exception:
+            pass
+
     def navigate_to_apply(self):
         """Navigate to Leave > Apply and wait for the card to render."""
         self.driver.get(self.apply_leave_url)
         self.wait.until(EC.visibility_of_element_located(self._card_header))
+        self._wait_for_spinner()
+        time.sleep(0.5)
 
     def is_no_leave_balance_displayed(self):
-        """Check if 'No Leave Types with Leave Balance' notice is shown."""
-        card = self.driver.find_element(By.CSS_SELECTOR, ".orangehrm-card-container")
-        return "No Leave Types with Leave Balance" in card.text
+        """Check if 'No Leave Types with Leave Balance' notice is shown without stale element issues."""
+        self._wait_for_spinner()
+        try:
+            def _check_balance(d):
+                body_text = d.find_element(By.TAG_NAME, "body").text
+                if "No Leave Types with Leave Balance" in body_text:
+                    return True
+                select_elements = d.find_elements(*self._leave_type_select)
+                if select_elements and select_elements[0].is_displayed():
+                    return False
+                return None
+
+            result = WebDriverWait(self.driver, 6).until(_check_balance)
+            return bool(result)
+        except Exception:
+            try:
+                return "No Leave Types with Leave Balance" in self.driver.find_element(By.TAG_NAME, "body").text
+            except Exception:
+                return False
 
     def _select_first_leave_type(self):
+        self._wait_for_spinner()
         dropdown = self.wait.until(EC.element_to_be_clickable(self._leave_type_select))
-        dropdown.click()
+        try:
+            dropdown.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", dropdown)
         time.sleep(0.5)
         first_option = self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".oxd-select-dropdown div[role='option']:not(:first-child)")))
-        first_option.click()
+        try:
+            first_option.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", first_option)
 
     def apply_leave(self, from_date: str, to_date: str, comment: str = None):
         """Fill and submit leave request."""

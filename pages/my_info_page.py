@@ -27,21 +27,51 @@ class MyInfoPage:
         # Toast notification
         self._toast_message = (By.CSS_SELECTOR, ".oxd-text--toast-message, .oxd-toast-content, .oxd-toast")
 
+    def _wait_for_spinner(self):
+        """Wait for any loading spinner or form overlay to disappear."""
+        try:
+            WebDriverWait(self.driver, 10).until(
+                EC.invisibility_of_element_located((By.CSS_SELECTOR, ".oxd-form-loader, .oxd-loading-spinner"))
+            )
+        except Exception:
+            pass
+
     def navigate(self):
         """Navigate to My Info via direct URL and ensure page is loaded."""
         self.driver.get(self.url)
         self.wait.until(EC.url_contains("/viewPersonalDetails"))
         self.wait.until(EC.visibility_of_element_located(self._personal_details_save_btn))
-        time.sleep(1)
+        self._wait_for_spinner()
+        time.sleep(0.5)
 
     def _select_dropdown_option(self, dropdown_locator, option_text):
+        self._wait_for_spinner()
         dropdown = self.wait.until(EC.element_to_be_clickable(dropdown_locator))
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", dropdown)
-        dropdown.click()
-        time.sleep(0.5)
+        time.sleep(0.3)
+        try:
+            dropdown.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", dropdown)
+
+        time.sleep(0.3)
         option_xpath = f"//div[@role='option']//span[text()='{option_text}']"
         option = self.wait.until(EC.element_to_be_clickable((By.XPATH, option_xpath)))
-        option.click()
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", option)
+        time.sleep(0.2)
+        try:
+            option.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", option)
+
+        # Wait for the dropdown options menu to close to prevent intercepting next actions
+        try:
+            WebDriverWait(self.driver, 3).until(
+                EC.invisibility_of_element_located((By.CSS_SELECTOR, ".oxd-select-dropdown"))
+            )
+        except Exception:
+            pass
+        time.sleep(0.3)
 
     def update_personal_details(self, nationality=None, marital_status=None, dob=None):
         """Update nationality, marital status, and date of birth."""
@@ -52,23 +82,34 @@ class MyInfoPage:
             self._select_dropdown_option(self._marital_status_select, marital_status)
 
         if dob:
+            self._wait_for_spinner()
             dob_elem = self.wait.until(EC.element_to_be_clickable(self._dob_input))
             self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", dob_elem)
-            current_val = dob_elem.get_attribute("value") or ""
-            for _ in range(len(current_val) + 5):
-                dob_elem.send_keys(Keys.BACKSPACE)
+            time.sleep(0.2)
+            dob_elem.send_keys(Keys.COMMAND if "darwin" in os.sys.platform else Keys.CONTROL, "a")
+            dob_elem.send_keys(Keys.BACKSPACE)
             dob_elem.send_keys(dob)
             dob_elem.send_keys(Keys.TAB)
 
+        self._wait_for_spinner()
         save_btn = self.wait.until(EC.element_to_be_clickable(self._personal_details_save_btn))
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", save_btn)
-        self.driver.execute_script("arguments[0].click();", save_btn)
+        time.sleep(0.3)
+        try:
+            save_btn.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", save_btn)
 
     def open_add_attachment(self):
         """Click on the Add button in the Attachments section."""
+        self._wait_for_spinner()
         btn = self.wait.until(EC.element_to_be_clickable(self._add_attachment_btn))
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", btn)
-        btn.click()
+        time.sleep(0.2)
+        try:
+            btn.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", btn)
         self.wait.until(EC.presence_of_element_located(self._file_input))
 
     def upload_attachment(self, file_path, comment=None):
