@@ -11,20 +11,20 @@ class MyInfoPage:
         self.wait = WebDriverWait(driver, 10)
         self.url = "https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewMyDetails"
 
-        # Form selectors
+        # form selectors
         self._nationality_select = (By.XPATH, "//label[text()='Nationality']/parent::div/following-sibling::div//div[contains(@class, 'oxd-select-text')]")
         self._marital_status_select = (By.XPATH, "//label[text()='Marital Status']/parent::div/following-sibling::div//div[contains(@class, 'oxd-select-text')]")
         self._dob_input = (By.XPATH, "//label[text()='Date of Birth']/parent::div/following-sibling::div//input")
         self._personal_details_save_btn = (By.XPATH, "(//button[@type='submit'])[1]")
 
-        # Attachments selectors
+        # attachments selectors
         self._add_attachment_btn = (By.XPATH, "//h6[text()='Attachments']/following::button[contains(., 'Add')][1]")
         self._file_input = (By.CSS_SELECTOR, "input[type='file']")
         self._comment_textarea = (By.XPATH, "//label[text()='Comment']/parent::div/following-sibling::div//textarea | //textarea[@placeholder='Type comment here']")
         self._attachment_save_btn = (By.XPATH, "(//button[@type='submit'])[last()]")
         self._inline_error_msg = (By.CSS_SELECTOR, ".oxd-input-field-error-message")
 
-        # Toast notification
+        # toast notification
         self._toast_message = (By.CSS_SELECTOR, ".oxd-text--toast-message, .oxd-toast-content, .oxd-toast")
 
     def _wait_for_spinner(self):
@@ -64,7 +64,7 @@ class MyInfoPage:
         except Exception:
             self.driver.execute_script("arguments[0].click();", option)
 
-        # Wait for the dropdown options menu to close to prevent intercepting next actions
+        # wait for the dropdown options menu to close to prevent intercepting next actions
         try:
             WebDriverWait(self.driver, 3).until(
                 EC.invisibility_of_element_located((By.CSS_SELECTOR, ".oxd-select-dropdown"))
@@ -86,8 +86,8 @@ class MyInfoPage:
             dob_elem = self.wait.until(EC.element_to_be_clickable(self._dob_input))
             self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", dob_elem)
             time.sleep(0.2)
-            dob_elem.send_keys(Keys.COMMAND if "darwin" in os.sys.platform else Keys.CONTROL, "a")
-            dob_elem.send_keys(Keys.BACKSPACE)
+            dob_elem.click()
+            dob_elem.send_keys(Keys.BACKSPACE * 15)
             dob_elem.send_keys(dob)
             dob_elem.send_keys(Keys.TAB)
 

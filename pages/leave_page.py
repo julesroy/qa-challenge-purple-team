@@ -12,17 +12,17 @@ class LeavePage:
         self.apply_leave_url = "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave"
         self.my_leave_url = "https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewMyLeaveList"
 
-        # Card header
+        # card header
         self._card_header = (By.XPATH, "//h6[contains(., 'Apply Leave')]")
 
-        # Form selectors
+        # form selectors
         self._leave_type_select = (By.XPATH, "//label[text()='Leave Type']/parent::div/following-sibling::div//div[contains(@class, 'oxd-select-text')]")
         self._from_date_input = (By.XPATH, "//label[text()='From Date']/parent::div/following-sibling::div//input")
         self._to_date_input = (By.XPATH, "//label[text()='To Date']/parent::div/following-sibling::div//input")
         self._comments_textarea = (By.XPATH, "//label[text()='Comments']/parent::div/following-sibling::div//textarea")
         self._submit_btn = (By.CSS_SELECTOR, "button[type='submit']")
 
-        # Toast
+        # toast notification
         self._toast_message = (By.CSS_SELECTOR, ".oxd-text--toast-message, .oxd-toast-content, .oxd-toast")
 
     def _wait_for_spinner(self):
@@ -81,13 +81,13 @@ class LeavePage:
         self._select_first_leave_type()
 
         from_elem = self.wait.until(EC.element_to_be_clickable(self._from_date_input))
-        from_elem.send_keys(Keys.COMMAND if "darwin" in os.sys.platform else Keys.CONTROL, "a")
-        from_elem.send_keys(Keys.BACKSPACE)
+        from_elem.click()
+        from_elem.send_keys(Keys.BACKSPACE * 15)
         from_elem.send_keys(from_date)
 
         to_elem = self.wait.until(EC.element_to_be_clickable(self._to_date_input))
-        to_elem.send_keys(Keys.COMMAND if "darwin" in os.sys.platform else Keys.CONTROL, "a")
-        to_elem.send_keys(Keys.BACKSPACE)
+        to_elem.click()
+        to_elem.send_keys(Keys.BACKSPACE * 15)
         to_elem.send_keys(to_date)
 
         if comment:

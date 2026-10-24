@@ -31,7 +31,7 @@ class PimPage:
             add_tab = self.wait.until(EC.element_to_be_clickable(self._add_employee_tab))
             add_tab.click()
         except Exception:
-            # Fallback to direct navigation if menu is collapsed or slow
+            # we fallback to direct navigation if menu is slow
             self.driver.get(self.add_employee_url)
 
         self.wait.until(EC.visibility_of_element_located(self._first_name_input))
@@ -48,7 +48,6 @@ class PimPage:
 
         if avatar_path:
             abs_path = os.path.abspath(avatar_path)
-            # Find file input (which may be hidden in UI, send_keys works directly on input[type='file'])
             file_elem = self.wait.until(EC.presence_of_element_located(self._file_input))
             file_elem.send_keys(abs_path)
 

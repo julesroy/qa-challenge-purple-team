@@ -10,22 +10,22 @@ class AdminPage:
         self.driver = driver
         self.wait = WebDriverWait(driver, 10)
 
-        # URLs
+        # urls
         self.users_url = "https://opensource-demo.orangehrmlive.com/web/index.php/admin/viewSystemUsers"
         self.add_user_url = "https://opensource-demo.orangehrmlive.com/web/index.php/admin/saveSystemUser"
         self.pay_grades_url = "https://opensource-demo.orangehrmlive.com/web/index.php/admin/viewPayGrades"
 
-        # Sidebar & Top nav
+        # sidebar
         self._admin_menu = (By.XPATH, "//span[text()='Admin']")
 
-        # User management selectors
+        # user management selectors
         self._search_username_input = (By.XPATH, "//label[text()='Username']/parent::div/following-sibling::div//input")
         self._search_submit_btn = (By.CSS_SELECTOR, "button[type='submit']")
         self._table_body = (By.CSS_SELECTOR, ".oxd-table-body")
         self._delete_icon_btn = (By.CSS_SELECTOR, "button .bi-trash")
         self._confirm_delete_btn = (By.XPATH, "//button[contains(., 'Yes, Delete')] | //button[contains(@class, 'oxd-button--label-danger')]")
 
-        # Add user form selectors
+        # add user form selectors
         self._role_select = (By.XPATH, "//label[text()='User Role']/parent::div/following-sibling::div//div[contains(@class, 'oxd-select-text')]")
         self._status_select = (By.XPATH, "//label[text()='Status']/parent::div/following-sibling::div//div[contains(@class, 'oxd-select-text')]")
         self._employee_name_input = (By.XPATH, "//label[text()='Employee Name']/parent::div/following-sibling::div//input")
@@ -35,14 +35,14 @@ class AdminPage:
         self._confirm_password_field = (By.XPATH, "//label[text()='Confirm Password']/parent::div/following-sibling::div//input")
         self._save_user_btn = (By.CSS_SELECTOR, "button[type='submit']")
 
-        # Pay Grades selectors
+        # pay grades selectors
         self._edit_pay_grade_icon = (By.CSS_SELECTOR, ".bi-pencil-fill")
         self._add_currency_btn = (By.XPATH, "//h6[text()='Currencies']/following::button[contains(., 'Add')][1]")
         self._min_salary_input = (By.XPATH, "//label[text()='Minimum Salary']/parent::div/following-sibling::div//input")
         self._max_salary_input = (By.XPATH, "//label[text()='Maximum Salary']/parent::div/following-sibling::div//input")
         self._inline_error_msg = (By.CSS_SELECTOR, ".oxd-input-field-error-message")
 
-        # Toast
+        # toast notification
         self._toast_message = (By.CSS_SELECTOR, ".oxd-text--toast-message, .oxd-toast-content, .oxd-toast")
 
     def _wait_for_spinner(self):
@@ -172,25 +172,25 @@ class AdminPage:
         self._select_dropdown(self._role_select, role)
         self._select_dropdown(self._status_select, status)
 
-        # Autocomplete employee name
+        # autocomplete employee name
         emp_input = self.wait.until(EC.element_to_be_clickable(self._employee_name_input))
         emp_input.clear()
         emp_input.send_keys(employee_hint)
-        # Wait for real autocomplete suggestions (span inside option)
+        # wait for real autocomplete suggestions (span inside option)
         first_option = self.wait.until(EC.element_to_be_clickable(self._autocomplete_option))
         first_option.click()
 
-        # Username
+        # username
         user_input = self.wait.until(EC.element_to_be_clickable(self._username_field))
         user_input.send_keys(username)
 
-        # Passwords
+        # passwords
         pwd_input = self.wait.until(EC.element_to_be_clickable(self._password_field))
         pwd_input.send_keys(password)
         confirm_pwd = self.wait.until(EC.element_to_be_clickable(self._confirm_password_field))
         confirm_pwd.send_keys(password)
 
-        # Submit
+        # submit
         save_btn = self.wait.until(EC.element_to_be_clickable(self._save_user_btn))
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", save_btn)
         save_btn.click()
@@ -204,7 +204,7 @@ class AdminPage:
         max_input = self.wait.until(EC.element_to_be_clickable(self._max_salary_input))
         max_input.clear()
         max_input.send_keys(str(max_salary))
-        # Trigger validation via tab or submit click
+        # trigger validation via tab or submit click
         max_input.send_keys(Keys.TAB)
         try:
             self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
