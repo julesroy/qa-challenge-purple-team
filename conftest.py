@@ -2,6 +2,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from pytest_html import extras
+from clients.api_client import OrangeHrmApiClient
 
 @pytest.fixture
 def driver():
@@ -16,6 +17,15 @@ def driver():
     yield driver
     driver.quit()
 
+@pytest.fixture
+def api_client():
+    # initialize and authenticate api client session
+    client = OrangeHrmApiClient()
+    client.authenticate()
+    yield client
+    # teardown: close session resources
+    client.close()
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
@@ -23,7 +33,7 @@ def pytest_runtest_makereport(item, call):
     extras_list = getattr(report, "extras", [])
 
     if report.when == "call" and report.failed:
-        # Capture screenshot if driver fixture is present
+        # capture screenshot if driver fixture is present
         driver = item.funcargs.get("driver", None)
         if driver:
             try:
@@ -37,4 +47,4 @@ def pytest_runtest_makereport(item, call):
     report.extras = extras_list
 
 def pytest_html_report_title(report):
-    report.title = "QA Challenge - Test Execution Report"
+    report.title = "QA final assignement - Test Execution Report"

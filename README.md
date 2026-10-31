@@ -43,12 +43,15 @@ pip install -r requirements.txt
 
 ## Structure :
 
-We adopted a Page Object Model (POM) pattern for the UI automation part.
+We adopted a Page Object Model (POM) pattern for the UI automation part, and an API Client Pattern for API automation part.
 
 ```
 qa-challenge-purple-team/
 │
 ├── .venv/ # virtual env
+│
+├── clients/ # api client
+│   └── api_client.py
 │
 ├── data/ # data files
 │   ├── avatar.jpg
@@ -73,6 +76,8 @@ qa-challenge-purple-team/
 │   │   ├── test_ui_01.py
 │   │   └── ...
 │   └── api/ # API tests
+│       ├── test_api_01.py
+│       └── ...
 │
 ├── conftest.py # test configuration
 ├── Purple_Team_Test_case_documentation.docx # test case documentation
@@ -103,7 +108,7 @@ Then open reports/report.html in your browser.
 ### Documentation :
 To generate documentation, we use `pdoc` :
 ```bash
-pdoc -o docs/ pages/ tests/
+pdoc -o docs/ clients/ pages/ tests/
 ```
 
 Then you can open index.html in the docs/ directory to access codebase documentation.
