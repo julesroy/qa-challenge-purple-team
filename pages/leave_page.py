@@ -1,5 +1,6 @@
 import os
 import time
+import datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -42,6 +43,53 @@ class LeavePage:
         self._wait_for_spinner()
         time.sleep(0.5)
 
+    def cancel_pending_leaves(self):
+        """Cancel any pending leave requests in My Leave to free up dates and restore balance."""
+        try:
+            self.driver.get(self.my_leave_url)
+            self._wait_for_spinner()
+            self.wait.until(EC.visibility_of_element_located((By.XPATH, "//h5[contains(., 'My Leave List')]")))
+            time.sleep(1)
+
+            while True:
+                cancel_btns = self.driver.find_elements(By.XPATH, "//button[normalize-space()='Cancel']")
+                if not cancel_btns:
+                    break
+                cancel_btns[0].click()
+                time.sleep(1.5)
+                self._wait_for_spinner()
+        except Exception:
+            pass
+
+    @staticmethod
+    def _format_date(date_str: str, placeholder: str) -> str:
+        """Format an ISO/standard date string to match the input's placeholder format."""
+        if not placeholder or not date_str:
+            return date_str
+
+        dt = None
+        for fmt in ("%Y-%m-%d", "%Y-%d-%m", "%d-%m-%Y", "%m-%d-%Y"):
+            try:
+                dt = datetime.datetime.strptime(date_str, fmt)
+                break
+            except ValueError:
+                pass
+
+        if not dt:
+            return date_str
+
+        p = placeholder.lower().strip()
+        if p == "yyyy-dd-mm":
+            return f"{dt.year:04d}-{dt.day:02d}-{dt.month:02d}"
+        elif p == "yyyy-mm-dd":
+            return f"{dt.year:04d}-{dt.month:02d}-{dt.day:02d}"
+        elif p == "dd-mm-yyyy":
+            return f"{dt.day:02d}-{dt.month:02d}-{dt.year:04d}"
+        elif p == "mm-dd-yyyy":
+            return f"{dt.month:02d}-{dt.day:02d}-{dt.year:04d}"
+
+        return date_str
+
     def is_no_leave_balance_displayed(self):
         """Check if 'No Leave Types with Leave Balance' notice is shown without stale element issues."""
         self._wait_for_spinner()
@@ -78,18 +126,30 @@ class LeavePage:
             self.driver.execute_script("arguments[0].click();", first_option)
 
     def apply_leave(self, from_date: str, to_date: str, comment: str = None):
-        """Fill and submit leave request."""
+        """Fill and submit leave request with automatic localization format detection."""
         self._select_first_leave_type()
 
         from_elem = self.wait.until(EC.element_to_be_clickable(self._from_date_input))
-        from_elem.click()
-        from_elem.send_keys(Keys.BACKSPACE * 15)
-        from_elem.send_keys(from_date)
-
         to_elem = self.wait.until(EC.element_to_be_clickable(self._to_date_input))
-        to_elem.click()
-        to_elem.send_keys(Keys.BACKSPACE * 15)
-        to_elem.send_keys(to_date)
+
+        # Detect active date format from placeholder
+        placeholder = from_elem.get_attribute("placeholder") or "yyyy-mm-dd"
+        formatted_from = self._format_date(from_date, placeholder)
+        formatted_to = self._format_date(to_date, placeholder)
+
+        # Clear and input from_date
+        from_elem.send_keys(Keys.CONTROL + "a")
+        from_elem.send_keys(Keys.BACKSPACE)
+        from_elem.send_keys(formatted_from)
+
+        # Clear and input to_date
+        to_elem.send_keys(Keys.CONTROL + "a")
+        to_elem.send_keys(Keys.BACKSPACE)
+        to_elem.send_keys(formatted_to)
+
+        # Trigger blur to let OrangeHRM recalculate balance & duration
+        to_elem.send_keys(Keys.TAB)
+        time.sleep(0.5)
 
         if comment:
             try:

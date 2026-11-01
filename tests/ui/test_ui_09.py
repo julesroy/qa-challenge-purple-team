@@ -23,6 +23,9 @@ def test_ui_09(driver):
     login_page.login("Admin", "admin123")
     wait.until(EC.url_contains("/dashboard/index"))
 
+    # Ensure test independence by clearing previous pending requests and restoring balance
+    leave_page.cancel_pending_leaves()
+
     # 2. Navigate to Leave > Apply
     leave_page.navigate_to_apply()
 
@@ -41,3 +44,6 @@ def test_ui_09(driver):
         assert "Successfully Saved" in toast_msg or "Success" in toast_msg, (
             f"Expected success message for leave request, got: {toast_msg}"
         )
+
+        # Teardown: cancel the created request to leave the account in a clean state
+        leave_page.cancel_pending_leaves()
