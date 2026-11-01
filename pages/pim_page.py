@@ -1,5 +1,7 @@
 import os
+import random
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -17,6 +19,7 @@ class PimPage:
         # form selectors
         self._first_name_input = (By.NAME, "firstName")
         self._last_name_input = (By.NAME, "lastName")
+        self._employee_id_input = (By.XPATH, "//label[text()='Employee Id']/parent::div/following-sibling::div//input")
         self._file_input = (By.CSS_SELECTOR, "input[type='file']")
         self._save_button = (By.CSS_SELECTOR, "button[type='submit']")
 
@@ -46,6 +49,9 @@ class PimPage:
         last_name_elem = self.wait.until(EC.element_to_be_clickable(self._last_name_input))
         last_name_elem.clear()
         last_name_elem.send_keys(last_name)
+
+        emp_id_elem = self.wait.until(EC.element_to_be_clickable(self._employee_id_input))
+        emp_id_elem.send_keys(Keys.BACKSPACE * 10, str(random.randint(10000, 99999)))
 
         if avatar_path:
             abs_path = os.path.abspath(avatar_path)
