@@ -142,6 +142,12 @@ class LeavePage:
         from_elem.send_keys(Keys.BACKSPACE)
         from_elem.send_keys(formatted_from)
 
+        # Wait for OrangeHRM to copy From Date into To Date on blur
+        from_elem.send_keys(Keys.TAB)
+        self.wait.until(
+            lambda _: to_elem.get_attribute("value") == formatted_from
+        )
+
         # Clear and input to_date
         to_elem.send_keys(Keys.CONTROL + "a")
         to_elem.send_keys(Keys.BACKSPACE)
