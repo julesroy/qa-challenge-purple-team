@@ -10,7 +10,7 @@ class LeavePage:
     """Page object for the Leave section of the website."""
     def __init__(self, driver):
         self.driver = driver
-        self.wait = WebDriverWait(driver, 10)
+        self.wait = WebDriverWait(driver, 30)
         self.apply_leave_url = "https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave"
         self.my_leave_url = "https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewMyLeaveList"
 
@@ -25,16 +25,13 @@ class LeavePage:
         self._submit_btn = (By.CSS_SELECTOR, "button[type='submit']")
 
         # toast notification
-        self._toast_message = (By.CSS_SELECTOR, ".oxd-text--toast-message, .oxd-toast-content, .oxd-toast")
+        self._toast_message = (By.CSS_SELECTOR, ".oxd-toast")
 
     def _wait_for_spinner(self):
         """Wait for any loading spinner or form overlay to disappear."""
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.invisibility_of_element_located((By.CSS_SELECTOR, ".oxd-form-loader, .oxd-loading-spinner"))
-            )
-        except Exception:
-            pass
+        self.wait.until(
+            EC.invisibility_of_element_located((By.CSS_SELECTOR, ".oxd-form-loader, .oxd-loading-spinner"))
+        )
 
     def navigate_to_apply(self):
         """Navigate to Leave > Apply and wait for the card to render."""
@@ -44,22 +41,67 @@ class LeavePage:
         time.sleep(0.5)
 
     def cancel_pending_leaves(self):
-        """Cancel any pending leave requests in My Leave to free up dates and restore balance."""
-        try:
-            self.driver.get(self.my_leave_url)
-            self._wait_for_spinner()
-            self.wait.until(EC.visibility_of_element_located((By.XPATH, "//h5[contains(., 'My Leave List')]")))
-            time.sleep(1)
+        """Cancel this scenario's requests, without touching other demo users' data."""
+        self.driver.get(self.my_leave_url)
+        self.wait.until(EC.visibility_of_element_located((By.XPATH, "//h5[normalize-space()='My Leave List']")))
+        self.wait.until(lambda d: d.find_elements(By.CSS_SELECTOR, ".oxd-table-body .oxd-table-row")
+                        or "No Records Found" in d.find_element(By.TAG_NAME, "body").text)
+        self._wait_for_spinner()
 
-            while True:
-                cancel_btns = self.driver.find_elements(By.XPATH, "//button[normalize-space()='Cancel']")
-                if not cancel_btns:
-                    break
-                cancel_btns[0].click()
-                time.sleep(1.5)
-                self._wait_for_spinner()
-        except Exception:
-            pass
+        cancel_locator = (By.XPATH,
+            "//div[contains(@class, 'oxd-table-row')][.//div[normalize-space()='Automated test leave application']]"
+            "//button[normalize-space()='Cancel']")
+        while self.driver.find_elements(*cancel_locator):
+            button = self.wait.until(EC.element_to_be_clickable(cancel_locator))
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", button)
+            button.click()
+            # Wait for the server to confirm cancellation before navigating away.
+            message = self.get_toast_message()
+            assert "Successfully Updated" in message, f"Leave cancellation failed: {message}"
+            self.wait.until(EC.staleness_of(button))
+            self._wait_for_spinner()
+
+    def _get_leave_data(self, resource):
+        """Read test preconditions using the browser's authenticated session (GET only)."""
+        result = self.driver.execute_async_script("""
+            const done = arguments[arguments.length - 1];
+            fetch('/web/index.php/api/v2/leave/' + arguments[0])
+                .then(async response => {
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    done({payload: await response.json()});
+                })
+                .catch(error => done({error: String(error)}));
+        """, resource)
+        if "error" in result:
+            raise AssertionError(f"Cannot read leave preconditions: {result['error']}")
+        return result["payload"]["data"]
+
+    def find_available_leave_date(self, start_date=None):
+        """Find a full working day with no holiday or overlapping leave.
+
+        Only read preconditions through the API; submission remains a UI action.
+        Keep the request in the current year, where the displayed balance applies.
+        """
+        start = start_date or (datetime.date.today() + datetime.timedelta(days=7))
+        workweek = self._get_leave_data("workweek?model=indexed")
+        holidays = self._get_leave_data(
+            f"holidays?fromDate={start.year}-01-01&toDate={start.year}-12-31"
+        )
+        holiday_dates = {holiday["date"] for holiday in holidays}
+        # Bounded search: never submit repeatedly until a request happens to pass.
+        for offset in range(60):
+            candidate = start + datetime.timedelta(days=offset)
+            if candidate.year != start.year:
+                break
+            day = candidate.isoformat()
+            # OrangeHRM: 0 = full workday; 4 = half day; 8 = non-working day.
+            weekday = str((candidate.weekday() + 1) % 7)
+            if workweek[weekday] != 0 or day in holiday_dates:
+                continue
+            overlaps = self._get_leave_data(f"overlap-leaves?fromDate={day}&toDate={day}")
+            if not overlaps:
+                return day
+        raise AssertionError("No available full working day in the next 60 days of the leave year")
 
     @staticmethod
     def _format_date(date_str: str, placeholder: str) -> str:
@@ -103,8 +145,9 @@ class LeavePage:
                     return False
                 return None
 
-            result = WebDriverWait(self.driver, 6).until(_check_balance)
-            return bool(result)
+            # `until` treats False as 'keep waiting', so wrap the resolved state.
+            result = self.wait.until(lambda d: (value,) if (value := _check_balance(d)) is not None else False)
+            return result[0]
         except Exception:
             try:
                 return "No Leave Types with Leave Balance" in self.driver.find_element(By.TAG_NAME, "body").text
@@ -153,9 +196,9 @@ class LeavePage:
         to_elem.send_keys(Keys.BACKSPACE)
         to_elem.send_keys(formatted_to)
 
-        # Trigger blur to let OrangeHRM recalculate balance & duration
+        # Trigger blur to let OrangeHRM recalculate balance & duration.
         to_elem.send_keys(Keys.TAB)
-        time.sleep(0.5)
+        self._wait_for_spinner()
 
         if comment:
             try:

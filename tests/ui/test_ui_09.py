@@ -34,16 +34,18 @@ def test_ui_09(driver):
         # Validate that system correctly displays the no balance warning
         assert leave_page.is_no_leave_balance_displayed(), "System message 'No Leave Types with Leave Balance' displayed"
     else:
-        # 4. If leave types with balance exist, apply for leave
-        leave_page.apply_leave(
-            from_date="2026-11-10",
-            to_date="2026-11-12",
-            comment="Automated test leave application"
-        )
-        toast_msg = leave_page.get_toast_message()
-        assert "Successfully Saved" in toast_msg or "Success" in toast_msg, (
-            f"Expected success message for leave request, got: {toast_msg}"
-        )
-
-        # Teardown: cancel the created request to leave the account in a clean state
-        leave_page.cancel_pending_leaves()
+        # 4. The public demo is shared: fixed dates can overlap other users' requests.
+        leave_date = leave_page.find_available_leave_date()
+        try:
+            leave_page.apply_leave(
+                from_date=leave_date,
+                to_date=leave_date,
+                comment="Automated test leave application"
+            )
+            toast_msg = leave_page.get_toast_message()
+            assert "Successfully Saved" in toast_msg, (
+                f"Expected success message for leave request, got: {toast_msg}"
+            )
+        finally:
+            # Also clean up if the assertion fails after the server saved the request.
+            leave_page.cancel_pending_leaves()
